@@ -35,7 +35,16 @@ function hash(str) {
  * Prefers the display name; falls back to the local part of the address.
  */
 export function avatarText(name, email) {
-    const source = (name || '').trim() || (email || '').split('@')[0] || '?';
+    let source = (name || '').trim() || (email || '').trim();
+
+    // Senders often have no display name, so the "name" is the address itself.
+    // Splitting that on dots gives nonsense ("admin@zenyun.net" -> AN), so keep
+    // only the local part before the @.
+    if (source.includes('@')) {
+        source = source.split('@')[0];
+    }
+
+    if (!source) return '?';
 
     // "John Doe" -> JD, "support" -> SU
     const words = source.split(/[\s._-]+/).filter(Boolean);

@@ -195,7 +195,13 @@ function formatUserCreateTime(regKey) {
   const currentYear = dayjs().year();
   const expireYear = createTime.year();
 
-  if (settingStore.lang === 'en') {
+  if (settingStore.lang === 'ru') {
+
+    return expireYear === currentYear
+        ? createTime.format('D MMMM, HH:mm')
+        : createTime.format('D MMMM YYYY, HH:mm');
+
+  } else if (settingStore.lang === 'en') {
 
     if (expireYear === currentYear) {
       return createTime.format('MMM D, HH:mm');
@@ -220,7 +226,13 @@ function formatExpireTime(expireTime) {
   const currentYear = dayjs().year();
   const expireYear = expireDate.year();
 
-  if (settingStore.lang === 'en') {
+  if (settingStore.lang === 'ru') {
+
+    return expireYear === currentYear
+        ? expireDate.format('D MMMM')
+        : expireDate.format('D MMMM YYYY');
+
+  } else if (settingStore.lang === 'en') {
 
     return expireYear === currentYear
         ? expireDate.format('MMM D')
