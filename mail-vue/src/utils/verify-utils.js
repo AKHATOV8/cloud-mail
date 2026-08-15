@@ -1,8 +1,10 @@
-export function isEmail(email) {
-    const reg = /^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~.-]+@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
-    return reg.test(email);
+const verifyUtils = {
+	isEmail(str) {
+		return  /^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~.-]+@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/.test(str);
+	},
+	isDomain(str) {
+		return /^(?!:\/\/)([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/.test(str);
+	}
 }
 
-export function isDomain(str) {
-    return /^(?!:\/\/)([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/.test(str);
-}
+export default  verifyUtils

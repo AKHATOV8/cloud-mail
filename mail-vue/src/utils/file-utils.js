@@ -1,58 +1,69 @@
-import Compressor from "compressorjs";
+const fileUtils = {
+	getExtFileName(filename) {
+		try {
+			const index = filename.lastIndexOf('.');
+			return index !== -1 ? filename.slice(index) : '';
+		} catch (e) {
+			return ''
+		}
+	},
 
-export function getExtName(fileName) {
-    const index = fileName.lastIndexOf('.')
-    return index !== -1 ? fileName.slice(index + 1).toLowerCase() : ''
-}
+	async getBuffHash(buff) {
+		const hashBuffer = await crypto.subtle.digest('SHA-256', buff);
+		const hashArray = Array.from(new Uint8Array(hashBuffer));
+		return hashArray.slice(0, 16).map(b => b.toString(16).padStart(2, '0')).join('');
+	},
 
-export function formatBytes(bytes) {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    const size = (bytes / Math.pow(k, i)).toFixed(2);
-    return `${size} ${units[i]}`;
-}
+	base64ToDataStr(base64) {
+		return base64.split(',')[1] || base64;
+	},
 
-export function fileToBase64(file, type = false) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => {
-            if (type) {
-                const base64 = reader.result;
-                resolve(base64);
-            } else {
-                const base64 = reader.result.split(',')[1];
-                resolve(base64);
-            }
-        };
-        reader.onerror = reject;
-    });
-}
+	base64ToUint8Array(base64) {
+		const binaryStr = atob(base64);
+		const len = binaryStr.length;
+		const bytes = new Uint8Array(len);
+		for (let i = 0; i < len; i++) {
+			bytes[i] = binaryStr.charCodeAt(i);
+		}
+		return bytes;
+	},
 
-export function base64Size(base64String) {
-    const padding = (base64String.match(/=*$/) || [''])[0].length;
-    const base64Length = base64String.length;
-    return (base64Length * 3) / 4 - padding;
-}
+	/**
+	 * 将 Base64 数据转换为 File 对象（自动识别 MIME 类型和文件扩展名）
+	 * @param {string} base64Data 带有 data: 前缀的 base64 数据
+	 * @param {string} [customFilename] 可选，传入自定义文件名（不含扩展名）
+	 * @returns {File} File 对象
+	 */
+	base64ToFile(base64Data, customFilename) {
+		const match = base64Data.match(/^data:(image|jpeg|video)\/([a-zA-Z0-9.+-]+);base64,/);
+		if (!match) {
+			throw new Error('Invalid base64 data format');
+		}
 
-export function compressImage(file, config = {}) {
-    return new Promise((resolve, reject) => {
+		const type = match[1]; // image 或 video
+		const ext = match[2];  // jpg, png, mp4 等
+		const mimeType = `${type}/${ext}`;
+		const cleanBase64 = base64Data.replace(/^data:(image|jpeg|video)\/[a-zA-Z0-9.+-]+;base64,/, '');
 
-        if (file.size < (config.convertSize || 1024 * 1024)) {
-            resolve(file)
-        }
+		const byteCharacters = atob(cleanBase64);
+		const byteArrays = [];
 
-        new Compressor(file, {
-            quality: config.quality || 0.8,
-            mimeType: 'image/jpeg',
-            success(result) {
-                resolve(result);
-            },
-            error(err) {
-                reject(err);
-            },
-        });
-    });
-}
+		for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
+			const slice = byteCharacters.slice(offset, offset + 1024);
+			const byteNumbers = new Array(slice.length);
+			for (let i = 0; i < slice.length; i++) {
+				byteNumbers[i] = slice.charCodeAt(i);
+			}
+			byteArrays.push(new Uint8Array(byteNumbers));
+		}
+
+		const blob = new Blob(byteArrays, { type: mimeType });
+
+		const filename = `${customFilename || `${type}_${Date.now()}`}.${ext}`;
+		return new File([blob], filename, { type: mimeType });
+	}
+};
+
+
+export default fileUtils;
+
