@@ -15,9 +15,13 @@ database_id = "f27c2d15-8ade-48d4-aea5-1f1d0efb81c1"		#d1数据库id
 binding = "kv"			#kv绑定名默认不可修改
 id = "69eabcd743a94577b5fc5a9b27c4cc10"					#kv数据库id
 
-[[r2_buckets]]
-binding = "r2"			#r2对象存储绑定名默认不可修改
-bucket_name = "cloudmail"		#r2对象存储桶的名字
+# Вложения хранятся в KV. Чтобы перевести их в R2:
+#   1. Панель Cloudflare -> R2 Object Storage -> подключить услугу
+#   2. Создать бакет с именем cloudmail
+#   3. Убрать решётки в трёх строках ниже и выложить заново
+#[[r2_buckets]]
+#binding = "r2"			#r2对象存储绑定名默认不可修改
+#bucket_name = "cloudmail"		#r2对象存储桶的名字
 
 #[[send_email]]
 #name = "email"			#CF发件, 配置后优先使用
