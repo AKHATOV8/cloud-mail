@@ -617,6 +617,31 @@ function close() {
 }
 </style>
 <style scoped lang="scss">
+@keyframes scrim-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes sheet-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
+
 .send {
   position: fixed;
   top: 0;
@@ -627,14 +652,23 @@ function close() {
   align-items: center;
   justify-content: center;
 
+  /* Composing is a blocking task, so the background is dimmed and pushed
+     back. A parallel, non-blocking panel would use translucency instead. */
+  background: var(--scrim);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  animation: scrim-in 260ms var(--ease-enter) both;
+
   .write-box {
     background: var(--el-bg-color);
     width: min(1367px, calc(100% - 80px));
-    box-shadow: var(--el-box-shadow-light);
-    border: 1px solid var(--el-border-color-light);
-    transition: var(--el-transition-duration);
+    box-shadow: var(--shadow-lg);
+    border: none;
+    /* Materialise: blur and scale move together, so it reads as a real
+       surface arriving rather than a flat sprite fading in. */
+    animation: sheet-in var(--spring-bounce-duration) var(--spring-bounce) both;
     padding: 15px;
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     display: grid;
     grid-template-rows: auto 1fr;
     overflow: hidden;

@@ -6,10 +6,33 @@
     </div>
     <div v-perm="'email:send'" class="writer-box" @click="openSend">
       <div class="writer">
-        <Icon icon="material-symbols:edit-outline-sharp" width="22" height="22"/>
+        <Icon icon="material-symbols:edit-outline-sharp" width="20" height="20"/>
+        <span class="writer-text">{{ $t('compose') }}</span>
+      </div>
+    </div>
+    <div class="search-box" v-if="showSearch">
+      <div class="search" :class="searchFocused ? 'is-focused' : ''">
+        <Icon class="search-icon" icon="ph:magnifying-glass" width="17" height="17"/>
+        <input
+            ref="searchRef"
+            v-model="keyword"
+            class="search-input"
+            type="text"
+            spellcheck="false"
+            :placeholder="$t('searchPlaceholder')"
+            @focus="searchFocused = true"
+            @blur="searchFocused = false"
+            @keydown.esc="clearSearch"
+        />
+        <Icon v-if="keyword" class="search-clear" icon="ph:x-circle-fill" width="16" height="16"
+              @click="clearSearch"/>
+        <span v-else class="search-kbd">/</span>
       </div>
     </div>
     <div class="toolbar">
+      <div class="icon-item search-toggle" v-if="showSearch" @click="focusSearch">
+        <Icon icon="ph:magnifying-glass" width="19" height="19"/>
+      </div>
       <div v-if="uiStore.dark" class="sun-icon icon-item" @click="openDark($event)">
         <Icon icon="mingcute:sun-fill"/>
       </div>
@@ -80,7 +103,7 @@ import {Icon} from "@iconify/vue";
 import {useUiStore} from "@/store/ui.js";
 import {useUserStore} from "@/store/user.js";
 import {useRoute} from "vue-router";
-import {computed, ref} from "vue";
+import {computed, ref, watch, onMounted, onBeforeUnmount} from "vue";
 import {useSettingStore} from "@/store/setting.js";
 import {hasPerm} from "@/perm/perm.js"
 import {useI18n} from "vue-i18n";
@@ -94,6 +117,52 @@ const uiStore = useUiStore();
 const logoutLoading = ref(false)
 const userInfoShow = ref(false)
 const userinfoRef = ref({})
+
+/* ---------- Quick search over the currently loaded list ---------- */
+const searchRef = ref(null)
+const searchFocused = ref(false)
+const keyword = ref('')
+
+// Views that render an email list and therefore support filtering
+const SEARCHABLE_VIEWS = ['email', 'send', 'draft', 'star', 'all-email']
+
+const showSearch = computed(() => SEARCHABLE_VIEWS.includes(route.meta.name))
+
+watch(keyword, (value) => {
+  uiStore.searchKeyword = value
+})
+
+// Reset the filter whenever the user navigates to another view
+watch(() => route.meta.name, () => {
+  keyword.value = ''
+  uiStore.searchKeyword = ''
+})
+
+function focusSearch() {
+  searchRef.value?.focus()
+}
+
+function clearSearch() {
+  keyword.value = ''
+  searchRef.value?.blur()
+}
+
+// "/" focuses search, Escape clears it — skipped while typing elsewhere
+function onGlobalKeydown(e) {
+  const el = e.target
+  const typing = el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)
+
+  if (e.key === '/' && !typing && showSearch.value) {
+    e.preventDefault()
+    focusSearch()
+  }
+}
+
+onMounted(() => window.addEventListener('keydown', onGlobalKeydown))
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onGlobalKeydown)
+  uiStore.searchKeyword = ''
+})
 
 const accountCount = computed(() => {
   return userStore.user.role.accountCount
@@ -341,16 +410,19 @@ function formatName(email) {
 
   .details-avatar {
     margin-top: 20px;
-    height: 40px;
-    width: 40px;
-    background: var(--el-bg-color);
-    color: var(--el-text-color-primary);
-    border: 1px solid var(--dark-border);
+    height: 48px;
+    width: 48px;
+    background: linear-gradient(135deg, var(--el-color-primary), #4f46e5);
+    color: #ffffff;
+    border: none;
     font-size: 18px;
+    font-weight: 600;
+    text-transform: uppercase;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 10px;
+    border-radius: 50%;
+    box-shadow: var(--shadow-xs);
   }
 }
 
@@ -360,50 +432,161 @@ function formatName(email) {
   font-size: 12px;
   display: grid;
   height: 100%;
-  gap: 10px;
-  grid-template-columns: auto auto 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 0 6px 0 0;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
 }
 
 .header.not-send {
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr) auto;
 }
 
+/* ---------- Compose ---------- */
 .writer-box {
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: 5px;
+  margin-left: 6px;
 
   .writer {
-    width: 34px;
     height: 34px;
-    border-radius: 50%;
+    padding: 0 14px;
+    border-radius: var(--radius-pill);
     color: #ffffff;
-    background: linear-gradient(135deg, #1890ff, #3a80dd);
-    transition: all 0.3s ease;
+    background: linear-gradient(135deg, var(--el-color-primary), #4f46e5);
+    box-shadow: var(--shadow-xs);
+    transition: box-shadow var(--dur-base) var(--ease-out),
+    transform var(--spring-bounce-duration) var(--spring-bounce),
+    filter var(--dur-fast) var(--ease-out);
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 7px;
 
     .writer-text {
-      margin-left: 15px;
-      font-size: 14px;
-      font-weight: bold;;
+      font-size: 13px;
+      font-weight: 590;
+      white-space: nowrap;
+      letter-spacing: var(--tracking-body);
+      @media (max-width: 900px) {
+        display: none;
+      }
     }
+
+    @media (max-width: 900px) {
+      width: 34px;
+      padding: 0;
+    }
+  }
+
+  &:hover .writer {
+    box-shadow: var(--shadow-md);
+    filter: brightness(1.06);
+  }
+
+  /* Press feedback fires on pointer-down and is deliberately faster than
+     the release, which springs back with a touch of overshoot. */
+  &:active .writer {
+    transform: scale(0.94);
+    transition-duration: 90ms;
+    transition-timing-function: ease-out;
+  }
+}
+
+/* ---------- Search ---------- */
+.search-box {
+  display: flex;
+  justify-content: flex-start;
+  min-width: 0;
+  @media (max-width: 767px) {
+    display: none;
+  }
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 420px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  background: var(--base-fill);
+  border: 1px solid transparent;
+  color: var(--secondary-text-color);
+  transition: background-color var(--dur-fast) var(--ease-out),
+  border-color var(--dur-fast) var(--ease-out),
+  box-shadow 220ms var(--ease-out);
+
+  &:hover {
+    background: var(--base-fill);
+  }
+
+  &.is-focused {
+    background: var(--el-bg-color);
+    border-color: var(--el-color-primary);
+    box-shadow: var(--focus-ring);
+  }
+
+  .search-icon {
+    flex-shrink: 0;
+  }
+
+  .search-input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    font-size: 13.5px;
+    color: var(--el-text-color-primary);
+    text-align: left;
+
+    &::placeholder {
+      color: var(--muted-text-color);
+    }
+  }
+
+  .search-clear {
+    flex-shrink: 0;
+    cursor: pointer;
+    color: var(--muted-text-color);
+    transition: color var(--dur-fast) var(--ease-out);
+
+    &:hover {
+      color: var(--el-text-color-primary);
+    }
+  }
+
+  .search-kbd {
+    flex-shrink: 0;
+    min-width: 18px;
+    height: 18px;
+    line-height: 17px;
+    padding: 0 5px;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    color: var(--muted-text-color);
+    background: var(--el-bg-color);
+    border: 1px solid var(--el-border-color);
+    border-radius: 5px;
   }
 }
 
 .header-btn {
   display: inline-flex;
   align-items: center;
+  gap: 4px;
   height: 100%;
   min-width: 0;
 }
 
 .breadcrumb-item {
-  font-weight: bold;
-  font-size: 14px;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: var(--tracking-title);
   color: var(--el-text-color-primary);
   overflow: hidden;
   white-space: nowrap;
@@ -412,62 +595,96 @@ function formatName(email) {
 
 .toolbar {
   display: flex;
+  align-items: center;
   justify-content: end;
-  gap: 15px;
-  @media (max-width: 767px) {
-    gap: 10px;
-  }
+  gap: 4px;
 
   .icon-item {
     align-self: center;
-    width: 30px;
-    height: 30px;
-    border-radius: 4px;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    color: var(--regular-text-color);
+    transition: background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    transform var(--spring-duration) var(--spring);
   }
 
   .icon-item:hover {
     background: var(--base-fill);
+    color: var(--el-text-color-primary);
+  }
+
+  .icon-item:active {
+    transform: scale(0.88);
+    background: var(--fill-pressed);
+    transition-duration: 80ms;
+    transition-timing-function: ease-out;
+  }
+
+  .search-toggle {
+    display: none;
+    @media (max-width: 767px) {
+      display: flex;
+    }
   }
 
   .notice {
-    font-size: 22px;
-    margin-right: 4px;
+    font-size: 21px;
   }
 
   .dark-icon {
-    font-size: 20px;
+    font-size: 19px;
   }
 
   .sun-icon {
-    font-size: 24px;
+    font-size: 22px;
   }
 
   .avatar {
     display: flex;
     align-items: center;
+    gap: 1px;
+    padding: 3px 4px 3px 3px;
+    margin-left: 4px;
+    border-radius: var(--radius-pill);
     cursor: pointer;
+    transition: background-color var(--dur-fast) var(--ease-out),
+    transform var(--spring-duration) var(--spring);
+
+    &:hover {
+      background: var(--base-fill);
+    }
+
+    &:active {
+      transform: scale(0.93);
+      transition-duration: 80ms;
+      transition-timing-function: ease-out;
+    }
 
     .avatar-text {
-      background: var(--el-bg-color);
-      color: var(--el-text-color-primary);
-      height: 30px;
-      width: 30px;
+      background: linear-gradient(135deg, var(--el-color-primary), #4f46e5);
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 600;
+      height: 28px;
+      width: 28px;
       display: flex;
       justify-content: center;
       align-items: center;
-      border-radius: 8px;
-      border: 1px solid var(--dark-border);
+      border-radius: 50%;
+      border: none;
+      text-transform: uppercase;
     }
 
     .setting-icon {
-      position: relative;
-      top: 0;
-      margin-right: 10px;
-      bottom: 10px;
+      position: static;
+      color: var(--muted-text-color);
+      flex-shrink: 0;
     }
   }
 

@@ -50,20 +50,20 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss" scoped>
+/* Spatial consistency: it comes in from the left, so it leaves to the left.
+   The exit curve mirrors the enter curve so the return path matches. */
 .el-aside-hide {
   position: fixed;
   left: 0;
   height: 100%;
   z-index: 100;
   transform: translateX(-100%);
-  transition: all 100ms ease;
+  transition: transform 280ms var(--ease-exit);
 }
 
 .aside-show {
-  -webkit-box-shadow: var(--aside-right-border);
-  box-shadow: var(--aside-right-border);
   transform: translateX(0);
-  transition: all 100ms ease;
+  transition: transform var(--spring-duration) var(--spring);
   z-index: 101;
   @media (max-width: 1025px) {
     position: fixed;
@@ -71,7 +71,9 @@ onBeforeUnmount(() => {
     left: 0;
     z-index: 101;
     height: 100%;
-    background: var(--el-bg-color);
+    background: var(--aside-backgound);
+    -webkit-box-shadow: var(--aside-right-border);
+    box-shadow: var(--aside-right-border);
   }
 }
 
@@ -100,26 +102,48 @@ onBeforeUnmount(() => {
   padding: 0;
 }
 
+/* Floating chrome: a translucent material rather than an opaque strip.
+   No hard 1px rule — a soft scroll edge does the separation instead. */
 .el-header {
-  background: var(--el-bg-color);
-  border-bottom: solid 1px var(--el-border-color);
-  padding: 0 0 0 0;
+  position: relative;
+  z-index: 10;
+  padding: 0 12px 0 4px;
+  background: var(--material-regular);
+  -webkit-backdrop-filter: var(--blur-regular);
+  backdrop-filter: var(--blur-regular);
+  box-shadow: var(--material-edge), inset 0 -0.5px 0 0 var(--hairline);
 }
 
+.el-header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 12px;
+  pointer-events: none;
+  background: linear-gradient(to bottom, var(--material-regular), transparent);
+  -webkit-mask-image: linear-gradient(to bottom, #000, transparent);
+  mask-image: linear-gradient(to bottom, #000, transparent);
+}
+
+/* A blocking task dims the background; a parallel panel would not */
 .overlay-show {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--scrim);
   z-index: 99;
-  transition: all 0.3s;
+  opacity: 1;
+  transition: opacity 280ms var(--ease-enter);
 }
 
 .overlay-hide {
   display: flex;
   pointer-events: none;
   opacity: 0;
+  transition: opacity 240ms var(--ease-exit);
 }
 </style>

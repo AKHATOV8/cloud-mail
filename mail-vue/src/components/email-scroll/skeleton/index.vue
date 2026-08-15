@@ -7,6 +7,13 @@
         <Icon style="color: var(--el-border-color)" icon="solar:star-line-duotone" width="18" height="18"/>
       </div>
       <div v-if="!showStar"></div>
+      <div class="row-avatar skeleton-avatar">
+        <el-skeleton animated>
+          <template #template>
+            <el-skeleton-item variant="circle" style="width: 32px;height: 32px;"/>
+          </template>
+        </el-skeleton>
+      </div>
       <div class="title" :class="accountShow ? 'title-column' : 'title-column'">
 
         <div class="email-sender">
@@ -118,6 +125,15 @@ import {Icon} from "@iconify/vue";
 :deep(.el-skeleton__item) {
   position: relative;
   top: 2px;
+}
+
+.skeleton-avatar {
+  box-shadow: none !important;
+  background: transparent !important;
+
+  :deep(.el-skeleton__item) {
+    top: 0;
+  }
 }
 
 @media (max-width: 1366px) {

@@ -27,10 +27,18 @@ html, body {
 }
 
 body {
-    font-family: -apple-system, Inter, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-    line-height: 1.5;
+    /* Prefer the platform's own face — it ships optical sizing and tracking tables */
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text",
+    "Segoe UI", system-ui, "Noto Sans", Helvetica, Arial, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji";
+    line-height: 1.47;
+    letter-spacing: var(--tracking-body);
     color: var(--el-text-color-primary);
     font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-optical-sizing: auto;
 }
 
 html, body {
@@ -105,70 +113,545 @@ button, input, select, textarea {
     max-height: 220px !important;
 }
 
+/* ============================================================
+   Design tokens — light
+   ============================================================ */
 :root {
-    --el-color-primary: #1890ff;
-    --el-color-primary-dark-2: #1064c0;
-    --el-color-primary-light-3: #4dabff;
-    --el-color-primary-light-5: #69c0ff;
-    --el-color-primary-light-7: #91d5ff;
-    --el-color-primary-light-9: #e6f7ff;
+    /* ---- Accent ramp (system blue) ---- */
+    --el-color-primary: #0071e3;
+    --el-color-primary-dark-2: #0058b0;
+    --el-color-primary-light-3: #3b95ec;
+    --el-color-primary-light-5: #6fb2f2;
+    --el-color-primary-light-7: #a8d1f8;
+    --el-color-primary-light-8: #d3e7fc;
+    --el-color-primary-light-9: #ecf4fe;
 
-    --extra-light-fill: #FAFCFF;
-    --light-ill: #F5F7FA;
-    --light-border: #E4E7ED;
-    --header-actions-border: inset 0 -1px 0 0 var(--el-border-color-lighter);
-    --aside-backgound: #001529;
-    --loadding-background: rgba(255, 255, 255, 0.8);
-    --dark-border: #CDD0D6;
-    --base-fill: #F0F2F5;
-    --regular-text-color: #585d69;
-    --light-border-color: #e7e9ec;
-    --aside-right-border: 3px 0 5px rgba(0, 21, 41, .35);
-    --choose-account-background: var(--el-color-primary-light-8);
-    --el-text-color-regular: var(--el-text-color-primary);
-    --email-scroll-content-color: rgba(25, 41, 59, 0.4);
-    --email-hover-background: #F2F6FC;
+    /* ---- Neutral surfaces (system grays) ---- */
+    --el-bg-color: #ffffff;
+    --surface-1: #ffffff;
+    --surface-2: #f5f5f7;
+    --surface-3: #ececee;
+    --surface-sunken: #f5f5f7;
+
+    /* ---- Text ---- */
+    --el-text-color-primary: #1d1d1f;
+    --el-text-color-regular: #3a3a3c;
+    --regular-text-color: #48484a;
+    --secondary-text-color: #6e6e73;
+    --muted-text-color: #8e8e93;
+
+    /* ---- Borders (hairlines, not solid rules) ---- */
+    --el-border-color: rgba(0, 0, 0, 0.12);
+    --el-border-color-lighter: rgba(0, 0, 0, 0.07);
+    --light-border: rgba(0, 0, 0, 0.12);
+    --light-border-color: rgba(0, 0, 0, 0.09);
+    --dark-border: rgba(0, 0, 0, 0.2);
+    --base-border-color: rgba(0, 0, 0, 0.14);
+    --hairline: rgba(0, 0, 0, 0.08);
+
+    /* ---- Fills ---- */
+    --extra-light-fill: rgba(0, 0, 0, 0.02);
+    --light-ill: rgba(0, 0, 0, 0.04);
+    --base-fill: rgba(0, 0, 0, 0.055);
+    --fill-pressed: rgba(0, 0, 0, 0.1);
+
+    /* ---- Radii (continuous-corner feel: generous, consistent) ---- */
+    --radius-xs: 7px;
+    --radius-sm: 10px;
+    --radius-md: 13px;
+    --radius-lg: 18px;
+    --radius-pill: 999px;
+
+    /* ---- Elevation: soft, wide, low-opacity — never a hard border ---- */
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.06), 0 0 0 0.5px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.1), 0 0 0 0.5px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.18), 0 0 0 0.5px rgba(0, 0, 0, 0.06);
+    --focus-ring: 0 0 0 3.5px rgba(0, 113, 227, 0.28);
+
+    /* ---- Materials: translucent layers, not opaque strips ----
+       Thin  = light material, draws attention to interactive chrome
+       Thick = heavier material, separates structural regions        */
+    --material-thin: rgba(255, 255, 255, 0.68);
+    --material-regular: rgba(255, 255, 255, 0.76);
+    --material-thick: rgba(246, 246, 248, 0.82);
+    --blur-thin: saturate(180%) blur(20px);
+    --blur-regular: saturate(180%) blur(30px);
+    --blur-thick: saturate(180%) blur(40px);
+    /* Bright top edge — light catching the material */
+    --material-edge: inset 0 0.5px 0 0 rgba(255, 255, 255, 0.7);
+    --scrim: rgba(0, 0, 0, 0.28);
+
+    /* ---- Sidebar ---- */
+    --aside-backgound: var(--material-thick);
+    --aside-solid: #f6f6f8;
+    --aside-text: #3a3a3c;
+    --aside-text-strong: #1d1d1f;
+    --aside-hover: rgba(0, 0, 0, 0.05);
+    --aside-active-bg: rgba(0, 113, 227, 0.12);
+    --aside-active-text: #0062c8;
+    --aside-section-label: #8e8e93;
+    --aside-divider: rgba(0, 0, 0, 0.08);
+    --aside-right-border: 8px 0 40px rgba(0, 0, 0, 0.16);
+
+    /* ---- Component-specific ---- */
+    --header-actions-border: inset 0 -0.5px 0 0 var(--el-border-color-lighter);
+    --loadding-background: rgba(255, 255, 255, 0.7);
+    --choose-account-background: rgba(0, 113, 227, 0.11);
+    --choose-account-border: rgba(0, 113, 227, 0.22);
+    --email-scroll-content-color: #86868b;
+    --email-hover-background: rgba(0, 0, 0, 0.035);
+    --email-selected-background: rgba(0, 113, 227, 0.1);
+    --email-unread-background: transparent;
+    --unread-dot: #0071e3;
     --login-border: none;
-    --form-desc-color: #71717a;
-    --login-switch-color: #006be6;
-    --scrollbar-track-color: #A8ABB2;
-    --base-border-color: #DCDFE6;
-    --secondary-text-color: #909399;
+    --form-desc-color: #6e6e73;
+    --login-switch-color: #0071e3;
+    --scrollbar-track-color: rgba(0, 0, 0, 0.32);
     --message-block-color: rgba(0, 0, 0, 0);
     --loading-hide-transition: all 200ms;
+    --avatar-ring: rgba(0, 0, 0, 0.06);
+
+    /* ---- Typography: tracking is size-specific, never one value ---- */
+    --tracking-display: -0.022em;
+    --tracking-title: -0.014em;
+    --tracking-body: -0.004em;
+    --tracking-caption: 0.005em;
+    --tracking-label: 0.06em;
+
+    /* ---- Motion: springs, expressed as CSS linear() easings ----
+       Apple parameters: (damping ratio, response).
+       These curves are sampled from the real spring solution, so they
+       decelerate the way a spring does rather than the way a bezier does. */
+
+    /* damping 1.0 / response 0.35 — critically damped, no overshoot. The default. */
+    --spring: linear(0, 0.0278, 0.0944, 0.1806, 0.2743, 0.3675, 0.4558, 0.5365, 0.6085, 0.6717, 0.7264, 0.7731, 0.8127, 0.846, 0.8739, 0.897, 0.9161, 0.9318, 0.9447, 0.9553, 0.9639, 0.9709, 0.9766, 0.9812, 0.9849, 0.9879, 0.9903, 0.9923, 0.9938, 0.9951, 0.9961, 0.9969, 0.9975, 0.998, 0.9984, 0.9988, 1);
+    --spring-duration: 515ms;
+
+    /* damping 1.0 / response 0.5 — same character, larger surfaces */
+    --spring-slow: linear(0, 0.0163, 0.0575, 0.1145, 0.1804, 0.2503, 0.3209, 0.3897, 0.4553, 0.5166, 0.5731, 0.6246, 0.6712, 0.713, 0.7502, 0.7832, 0.8123, 0.8379, 0.8602, 0.8797, 0.8967, 0.9114, 0.9241, 0.9351, 0.9445, 0.9527, 0.9597, 0.9657, 0.9708, 0.9752, 0.9789, 0.9821, 0.9848, 0.9872, 0.9891, 0.9908, 0.9922, 0.9934, 0.9945, 0.9953, 0.996, 0.9967, 0.9972, 0.9976, 0.998, 0.9983, 0.9986, 0.9988, 1);
+    --spring-slow-duration: 735ms;
+
+    /* damping 0.8 / response 0.3 — slight overshoot. Only after momentum. */
+    --spring-bounce: linear(0, 0.039, 0.1324, 0.2525, 0.3805, 0.504, 0.6158, 0.7125, 0.7927, 0.8571, 0.9071, 0.9446, 0.9717, 0.9904, 1.0026, 1.01, 1.0138, 1.0151, 1.0148, 1.0136, 1.0119, 1.0099, 1.008, 1.0063, 1.0048, 1.0035, 1.0024, 1.0016, 1);
+    --spring-bounce-duration: 405ms;
+
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    /* Mirrored pair for reversible transitions */
+    --ease-enter: cubic-bezier(0.32, 0.72, 0, 1);
+    --ease-exit: cubic-bezier(1, 0, 0.72, 0.32);
+    --dur-fast: 110ms;
+    --dur-base: 200ms;
+
     --vt-x: 50%;
     --vt-y: 50%;
     --vt-duration: 520ms;
     --vt-easing: ease-out;
 }
 
+/* ============================================================
+   Design tokens — dark
+   ============================================================ */
 .dark {
-    --extra-light-fill: #191919;
-    --light-ill: #262727;
-    --light-border: #414243;
-    --aside-backgound: #141414;
-    --header-actions-border: inset 0 -1px 0 0 var(--el-border-color-lighter);
-    --loadding-background: rgba(0, 0, 0, 0.3);
-    --dark-border: #636466;
-    --base-fill: #303030;
-    --regular-text-color: #bfbdbc;
-    --light-border-color: #414243;
-    --aside-right-border: 3px 0 5px #0A0A0A;
-    --choose-account-background: #39393A;
-    --email-scroll-content-color: rgba(255, 255, 255, 0.3);
-    --email-hover-background: #1D1E1F;
+    --el-color-primary: #0a84ff;
+    --el-color-primary-dark-2: #0060df;
+    --el-color-primary-light-3: #409cff;
+    --el-color-primary-light-5: #64b0ff;
+    --el-color-primary-light-7: rgba(10, 132, 255, 0.4);
+    --el-color-primary-light-8: rgba(10, 132, 255, 0.24);
+    --el-color-primary-light-9: rgba(10, 132, 255, 0.14);
+
+    --el-bg-color: #0c0c0e;
+    --surface-1: #161618;
+    --surface-2: #1c1c1f;
+    --surface-3: #242427;
+    --surface-sunken: #000000;
+
+    --el-text-color-primary: #f5f5f7;
+    --el-text-color-regular: #d6d6da;
+    --regular-text-color: #b8b8bd;
+    --secondary-text-color: #98989d;
+    --muted-text-color: #7c7c81;
+
+    --el-border-color: rgba(255, 255, 255, 0.13) !important;
+    --el-border-color-lighter: rgba(255, 255, 255, 0.08);
+    --light-border: rgba(255, 255, 255, 0.13);
+    --light-border-color: rgba(255, 255, 255, 0.1);
+    --dark-border: rgba(255, 255, 255, 0.22);
+    --base-border-color: rgba(255, 255, 255, 0.16);
+    --hairline: rgba(255, 255, 255, 0.09);
+
+    --extra-light-fill: rgba(255, 255, 255, 0.03);
+    --light-ill: rgba(255, 255, 255, 0.06);
+    --base-fill: rgba(255, 255, 255, 0.09);
+    --fill-pressed: rgba(255, 255, 255, 0.15);
+
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.55), 0 0 0 0.5px rgba(255, 255, 255, 0.07);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 0 0.5px rgba(255, 255, 255, 0.09);
+    --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.75), 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+    --focus-ring: 0 0 0 3.5px rgba(10, 132, 255, 0.36);
+
+    --material-thin: rgba(30, 30, 32, 0.62);
+    --material-regular: rgba(24, 24, 26, 0.72);
+    --material-thick: rgba(18, 18, 20, 0.8);
+    --material-edge: inset 0 0.5px 0 0 rgba(255, 255, 255, 0.09);
+    --scrim: rgba(0, 0, 0, 0.5);
+
+    --aside-backgound: var(--material-thick);
+    --aside-solid: #121214;
+    --aside-text: #d6d6da;
+    --aside-text-strong: #ffffff;
+    --aside-hover: rgba(255, 255, 255, 0.07);
+    --aside-active-bg: rgba(10, 132, 255, 0.22);
+    --aside-active-text: #64b0ff;
+    --aside-section-label: #7c7c81;
+    --aside-divider: rgba(255, 255, 255, 0.08);
+    --aside-right-border: 8px 0 40px rgba(0, 0, 0, 0.7);
+
+    --header-actions-border: inset 0 -0.5px 0 0 var(--el-border-color-lighter);
+    --loadding-background: rgba(0, 0, 0, 0.45);
+    --choose-account-background: rgba(10, 132, 255, 0.18);
+    --choose-account-border: rgba(10, 132, 255, 0.32);
+    --email-scroll-content-color: #8e8e93;
+    --email-hover-background: rgba(255, 255, 255, 0.05);
+    --email-selected-background: rgba(10, 132, 255, 0.16);
+    --email-unread-background: transparent;
+    --unread-dot: #0a84ff;
     --login-border: none;
-    --form-desc-color: #8D9095;
-    --login-switch-color: rgb(102, 177, 255);
-    --scrollbar-track-color: #8D9095;
-    --base-border-color: #4C4D4F;
-    --secondary-text-color: #A3A6AD;
+    --form-desc-color: #98989d;
+    --login-switch-color: #409cff;
+    --scrollbar-track-color: rgba(255, 255, 255, 0.32);
     --message-block-color: rgba(30, 30, 30, 0.2);
-    --el-border-color: #414243 !important;
+    --avatar-ring: rgba(255, 255, 255, 0.1);
 }
 
 .el-input {
     --el-input-text-color: var(--el-text-color-primary) !important;
+}
+
+/* ============================================================
+   Global refinements
+   ============================================================ */
+
+/* Softer, thinner scrollbars that fade into the surface */
+*::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: var(--dark-border);
+    border-radius: var(--radius-pill);
+    border: 3px solid transparent;
+    background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-track-color);
+}
+
+/* ---- Materials --------------------------------------------------------
+   A translucent layer that content scrolls *under*, not an opaque strip.
+   The bright inner top edge reads as light catching the surface.       */
+.material-thin {
+    background: var(--material-thin);
+    -webkit-backdrop-filter: var(--blur-thin);
+    backdrop-filter: var(--blur-thin);
+    box-shadow: var(--material-edge);
+}
+
+.material-thick {
+    background: var(--material-thick);
+    -webkit-backdrop-filter: var(--blur-thick);
+    backdrop-filter: var(--blur-thick);
+}
+
+/* Scroll edge effect: a soft fade where content meets floating chrome,
+   instead of a 1px rule that cuts the layout in half. */
+.scroll-edge::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    height: 14px;
+    pointer-events: none;
+    background: linear-gradient(to bottom, var(--material-regular), transparent);
+    -webkit-mask-image: linear-gradient(to bottom, #000, transparent);
+    mask-image: linear-gradient(to bottom, #000, transparent);
+}
+
+/* Element Plus surface harmonisation */
+.el-button {
+    border-radius: var(--radius-sm) !important;
+    font-weight: 510;
+    letter-spacing: var(--tracking-body);
+    transition: background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
+    transform var(--spring-duration) var(--spring);
+}
+
+/* Feedback lives on the press, and it is instant */
+.el-button:active {
+    transform: scale(0.97);
+    transition-duration: 90ms;
+    transition-timing-function: ease-out;
+}
+
+.el-button--primary {
+    box-shadow: var(--shadow-xs);
+}
+
+.el-input__wrapper,
+.el-textarea__inner,
+.el-select__wrapper {
+    border-radius: var(--radius-sm) !important;
+    transition: box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.el-input__wrapper.is-focus,
+.el-select__wrapper.is-focused {
+    box-shadow: 0 0 0 1px var(--el-color-primary) inset, var(--focus-ring) !important;
+}
+
+.el-card {
+    border-radius: var(--radius-md) !important;
+    border-color: var(--el-border-color) !important;
+    transition: border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+
+.el-dialog {
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-lg) !important;
+}
+
+/* Popovers are a light material that materialises from its trigger */
+.el-popper.is-light,
+.el-dropdown__popper,
+.el-select__popper {
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--shadow-md) !important;
+    border: none !important;
+    background: var(--material-thin) !important;
+    -webkit-backdrop-filter: var(--blur-regular);
+    backdrop-filter: var(--blur-regular);
+}
+
+/* Blur + scale together, so the surface arrives as a material rather
+   than fading in like a flat sprite. Origin is the trigger, not the centre. */
+@keyframes material-in {
+    from {
+        opacity: 0;
+        transform: scale(0.94);
+        filter: blur(6px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+        filter: blur(0);
+    }
+}
+
+.el-popper,
+.el-dialog {
+    animation: material-in var(--spring-bounce-duration) var(--spring-bounce) both;
+}
+
+.el-popper[data-popper-placement^='bottom'] { transform-origin: top center; }
+.el-popper[data-popper-placement^='top'] { transform-origin: bottom center; }
+.el-popper[data-popper-placement^='bottom-start'] { transform-origin: top left; }
+.el-popper[data-popper-placement^='bottom-end'] { transform-origin: top right; }
+.el-popper[data-popper-placement^='left'] { transform-origin: center right; }
+.el-popper[data-popper-placement^='right'] { transform-origin: center left; }
+
+.el-dropdown-menu__item {
+    border-radius: var(--radius-xs);
+    margin: 2px 6px;
+    padding: 6px 10px !important;
+    transition: background-color 80ms ease-out;
+}
+
+.el-dropdown-menu__item:active {
+    background: var(--fill-pressed) !important;
+}
+
+.el-dropdown-menu {
+    padding: 4px 0 !important;
+}
+
+.el-tag {
+    border-radius: var(--radius-xs) !important;
+}
+
+.el-message {
+    border-radius: var(--radius-sm) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+.el-notification {
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--shadow-lg) !important;
+}
+
+.el-checkbox__inner {
+    border-radius: 4px !important;
+}
+
+.el-skeleton__item {
+    border-radius: var(--radius-xs) !important;
+}
+
+/* Accessible focus for keyboard users only */
+:focus-visible {
+    outline: 2px solid var(--el-color-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* ---- Typography scale -------------------------------------------------
+   Tracking is size-specific: large text reads too loose as it grows, so it
+   tightens; small text needs a touch of positive tracking to stay legible.
+   Leading moves inversely to size. Hierarchy comes from weight + size +
+   leading as a set, not from size alone. */
+.t-display {
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    line-height: 1.06;
+    letter-spacing: var(--tracking-display);
+    font-weight: 640;
+}
+
+.t-title {
+    font-size: 1.0625rem;
+    line-height: 1.3;
+    letter-spacing: var(--tracking-title);
+    font-weight: 600;
+}
+
+.t-body {
+    font-size: 0.875rem;
+    line-height: 1.47;
+    letter-spacing: var(--tracking-body);
+    font-weight: 400;
+}
+
+.t-caption {
+    font-size: 0.75rem;
+    line-height: 1.35;
+    letter-spacing: var(--tracking-caption);
+}
+
+.t-label {
+    font-size: 0.6875rem;
+    line-height: 1.3;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+h1, h2, h3 {
+    letter-spacing: var(--tracking-title);
+    line-height: 1.2;
+}
+
+/* Vibrancy: over a translucent surface, flat gray text loses its footing.
+   Slightly heavier weight and a touch more tracking hold it together. */
+.on-material {
+    font-weight: 510;
+    letter-spacing: 0.002em;
+}
+
+/* ---- Accessibility: three independent signals -------------------------
+   Reduced motion does not mean no feedback — it means a gentler,
+   non-vestibular equivalent. Opacity and colour changes stay; slides,
+   springs and overshoot go.                                            */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 200ms !important;
+        animation-timing-function: ease !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 160ms !important;
+        transition-timing-function: ease !important;
+        scroll-behavior: auto !important;
+    }
+
+    /* No elastic, no travel — cross-fade in place */
+    @keyframes material-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .el-popper,
+    .el-dialog {
+        animation: material-in 160ms ease both;
+    }
+
+    .el-button:active,
+    .el-dropdown-menu__item:active {
+        transform: none !important;
+    }
+}
+
+/* Frostier and more solid — the blur is what costs legibility */
+@media (prefers-reduced-transparency: reduce) {
+    :root {
+        --material-thin: #ffffff;
+        --material-regular: #ffffff;
+        --material-thick: #f6f6f8;
+        --blur-thin: none;
+        --blur-regular: none;
+        --blur-thick: none;
+    }
+
+    .dark {
+        --material-thin: #161618;
+        --material-regular: #131315;
+        --material-thick: #121214;
+    }
+
+    .el-popper.is-light,
+    .el-dropdown__popper,
+    .el-select__popper {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+}
+
+/* Near-solid backgrounds with a defined, contrasting border */
+@media (prefers-contrast: more) {
+    :root {
+        --el-border-color: rgba(0, 0, 0, 0.55);
+        --el-border-color-lighter: rgba(0, 0, 0, 0.3);
+        --secondary-text-color: #3a3a3c;
+        --muted-text-color: #48484a;
+        --email-scroll-content-color: #3a3a3c;
+        --material-thin: #ffffff;
+        --material-regular: #ffffff;
+        --material-thick: #ffffff;
+        --blur-thin: none;
+        --blur-regular: none;
+        --blur-thick: none;
+    }
+
+    .dark {
+        --el-border-color: rgba(255, 255, 255, 0.55) !important;
+        --el-border-color-lighter: rgba(255, 255, 255, 0.3);
+        --secondary-text-color: #e5e5ea;
+        --muted-text-color: #d6d6da;
+        --email-scroll-content-color: #d6d6da;
+        --material-thin: #0c0c0e;
+        --material-regular: #0c0c0e;
+        --material-thick: #0c0c0e;
+    }
 }
 
 /* 视图过渡，基于径向剪裁 */

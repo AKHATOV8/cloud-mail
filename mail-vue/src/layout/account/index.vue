@@ -1,52 +1,64 @@
 <template>
   <div class="account-box">
     <div class="head-opt">
-      <Icon v-perm="'account:add'" class="icon add" icon="ion:add-outline" width="23" height="23" @click="add"/>
-      <Icon class="icon refresh" icon="ion:reload" width="18" height="18" @click="refresh"/>
+      <span class="head-label">{{ $t('emailAccount') }}</span>
+      <div class="head-actions">
+        <Icon v-perm="'account:add'" class="icon add" icon="ion:add-outline" width="19" height="19" @click="add"/>
+        <Icon class="icon refresh" icon="ion:reload" width="15" height="15" @click="refresh"/>
+      </div>
     </div>
     <el-scrollbar class="scrollbar" ref="scrollbarRef">
       <div v-infinite-scroll="getAccountList" :infinite-scroll-distance="600" :infinite-scroll-immediate="false">
-        <el-card class="item" :class="itemBg(item.accountId)" v-for="(item, index) in accounts" :key="item.accountId"
-                 @click="changeAccount(item)">
-          <div class="account">
-            {{ item.email }}
+        <div class="item" :class="itemBg(item.accountId)" v-for="(item, index) in accounts" :key="item.accountId"
+             @click="changeAccount(item)">
+          <div class="item-avatar" :style="avatarStyle(item.email)">
+            {{ avatarText('', item.email) }}
           </div>
-          <div class="opt">
-            <div class="send-email" @click.stop>
-              <Icon @click="setAllReceive(item)" v-if="!item.allReceive" icon="eva:email-fill" width="22" height="22" color="#fccb1a"/>
-              <Icon @click="setAllReceive(item)" v-else icon="flat-color-icons:folder" width="22" height="22" color="#23c4f1" />
-            </div>
-            <div class="settings" @click.stop>
-              <Icon icon="fluent-color:clipboard-24" width="22" height="22" @click.stop="copyAccount(item.email)"/>
-              <Icon icon="fluent:settings-24-filled" width="21" height="21" color="#909399"
-                    v-if="showNullSetting(item)"/>
-              <el-dropdown v-else>
-                <Icon icon="fluent:settings-24-filled" width="21" height="21" color="#909399"/>
-                <template #dropdown>
-                  <el-dropdown-menu>
-                    <el-dropdown-item v-if="hasPerm('email:send')" @click="openSetName(item)">{{ $t('rename') }}</el-dropdown-item>
-                    <el-dropdown-item v-if="item.accountId !== userStore.user.account.accountId" @click="setAsTop(item, index)">{{ $t('pin') }}</el-dropdown-item>
-                    <el-dropdown-item v-if="item.accountId !== userStore.user.account.accountId && hasPerm('account:delete')"
-                                      @click="remove(item)">{{ $t('delete') }}
-                    </el-dropdown-item>
-                  </el-dropdown-menu>
-                </template>
-              </el-dropdown>
+          <div class="item-body">
+            <div class="account">{{ item.email }}</div>
+            <div class="item-meta">
+              <span class="mode-chip" @click.stop="setAllReceive(item)">
+                <Icon v-if="!item.allReceive" icon="eva:email-fill" width="13" height="13"/>
+                <Icon v-else icon="flat-color-icons:folder" width="13" height="13"/>
+                <span>{{ item.allReceive ? $t('allMail') : $t('inbox') }}</span>
+              </span>
             </div>
           </div>
-        </el-card>
+          <div class="item-actions" @click.stop>
+            <span class="act" @click.stop="copyAccount(item.email)">
+              <Icon icon="ph:copy" width="15" height="15"/>
+            </span>
+            <span class="act is-muted" v-if="showNullSetting(item)">
+              <Icon icon="ph:dots-three-outline-fill" width="15" height="15"/>
+            </span>
+            <el-dropdown v-else trigger="click">
+              <span class="act">
+                <Icon icon="ph:dots-three-outline-fill" width="15" height="15"/>
+              </span>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item v-if="hasPerm('email:send')" @click="openSetName(item)">{{ $t('rename') }}</el-dropdown-item>
+                  <el-dropdown-item v-if="item.accountId !== userStore.user.account.accountId" @click="setAsTop(item, index)">{{ $t('pin') }}</el-dropdown-item>
+                  <el-dropdown-item v-if="item.accountId !== userStore.user.account.accountId && hasPerm('account:delete')"
+                                    @click="remove(item)">{{ $t('delete') }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
+        </div>
 
         <!-- Initial Loading Skeleton -->
         <template v-if="loading">
           <el-skeleton v-for="i in skeletonRows" :key="i" animated>
             <template #template>
-              <el-card class="item">
-                <el-skeleton-item variant="p" style="width: 70%; height: 20px; margin-bottom: 25px"/>
-                <div style="display: flex; justify-content: space-between">
-                  <el-skeleton-item variant="text" style="width: 20px"/>
-                  <el-skeleton-item variant="text" style="width: 20px"/>
+              <div class="item skeleton-item">
+                <el-skeleton-item variant="circle" style="width: 30px; height: 30px"/>
+                <div style="display: grid; gap: 6px">
+                  <el-skeleton-item variant="p" style="width: 75%; height: 12px"/>
+                  <el-skeleton-item variant="text" style="width: 40%; height: 9px"/>
                 </div>
-              </el-card>
+              </div>
             </template>
           </el-skeleton>
         </template>
@@ -137,6 +149,7 @@ import {
   accountSetAsTop
 } from "@/request/account.js";
 import {sleep} from "@/utils/time-utils.js"
+import {avatarStyle, avatarText} from "@/utils/avatar.js";
 import {isEmail} from "@/utils/verify-utils.js";
 import {useSettingStore} from "@/store/setting.js";
 import {useAccountStore} from "@/store/account.js";
@@ -518,42 +531,87 @@ path[fill="#ffdda1"] {
 <style scoped lang="scss">
 .account-box {
 
-  border-right: 1px solid var(--el-border-color) !important;
+  position: relative;
+  border-right: none !important;
+  box-shadow: inset -0.5px 0 0 0 var(--hairline);
   background-color: var(--el-bg-color);
   height: 100%;
   overflow: hidden;
 
+  /* Floating translucent chrome: the list scrolls underneath it, and a soft
+     scroll edge marks the overlap instead of a hard divider. */
   .head-opt {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 5;
     display: flex;
     align-items: center;
-    height: 38px;
-    box-shadow: var(--header-actions-border);
-    padding-left: 10px;
-    padding-right: 10px;
+    justify-content: space-between;
+    height: 42px;
+    background: var(--material-thin);
+    -webkit-backdrop-filter: var(--blur-thin);
+    backdrop-filter: var(--blur-thin);
+    box-shadow: var(--material-edge);
+    padding: 0 8px 0 14px;
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 100%;
+      height: 12px;
+      pointer-events: none;
+      background: linear-gradient(to bottom, var(--material-thin), transparent);
+      -webkit-mask-image: linear-gradient(to bottom, #000, transparent);
+      mask-image: linear-gradient(to bottom, #000, transparent);
+    }
+
+    .head-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted-text-color);
+      user-select: none;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .head-actions {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      flex-shrink: 0;
+    }
 
     .icon {
       cursor: pointer;
-    }
+      width: 26px;
+      height: 26px;
+      padding: 4px;
+      border-radius: var(--radius-xs);
+      color: var(--secondary-text-color);
+      transition: background-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
 
-    .refresh {
-      margin-left: 10px;
-    }
-
-    .add {
-      margin-left: 2px;
-    }
-
-    .head-opt:not(.add) .refresh {
-      margin-left: 5px;
+      &:hover {
+        background: var(--base-fill);
+        color: var(--el-text-color-primary);
+      }
     }
   }
 
   .scrollbar {
     width: 100%;
-    height: calc(100% - 38px);
+    /* Full height — content passes beneath the floating header */
+    height: 100%;
     overflow: auto;
     @media (max-width: 767px) {
-      height: calc(100% - 98px);
+      height: calc(100% - 56px);
     }
 
     .empty {
@@ -577,52 +635,164 @@ path[fill="#ffdda1"] {
     margin-top: 15px;
   }
 
+  /* ---------- Account row ---------- */
   .item {
-    background-color: var(--el-bg-color);
-    border-radius: 8px;
-    padding: 12px 10px;
-    margin-bottom: 10px;
-    margin-left: 10px;
-    margin-right: 10px;
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    padding: 8px 8px 8px 10px;
+    margin: 0 8px 2px;
     cursor: pointer;
+    transition: background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    transform var(--spring-duration) var(--spring);
+
+    /* Instant, on press — not on release */
+    &:active {
+      transform: scale(0.978);
+      background: var(--fill-pressed);
+      transition-duration: 90ms;
+      transition-timing-function: ease-out;
+    }
+
+    .item-avatar {
+      flex-shrink: 0;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      box-shadow: inset 0 0 0 1px var(--avatar-ring);
+      user-select: none;
+    }
+
+    .item-body {
+      min-width: 0;
+    }
 
     .account {
-      font-weight: 600;
-      margin-bottom: 20px;
+      font-weight: 550;
+      font-size: 13.5px;
+      line-height: 1.35;
+      color: var(--el-text-color-primary);
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
     }
 
-    .opt {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      color: #888;
+    .item-meta {
+      margin-top: 1px;
 
-      .settings {
-        display: flex;
+      .mode-chip {
+        display: inline-flex;
         align-items: center;
-        gap: 10px;
-      }
+        gap: 4px;
+        font-size: 11.5px;
+        line-height: 1.4;
+        color: var(--secondary-text-color);
+        border-radius: var(--radius-xs);
+        padding: 0 3px;
+        margin-left: -3px;
+        transition: background-color var(--dur-fast) var(--ease-out),
+        color var(--dur-fast) var(--ease-out);
 
-      .send-email {
-        display: flex;
-        align-items: center;
+        &:hover {
+          background: var(--base-fill);
+          color: var(--el-text-color-primary);
+        }
       }
     }
 
-    :deep(.el-card__body) {
-      padding: 0;
+    /* Row actions stay hidden until the row is hovered or active */
+    .item-actions {
+      display: flex;
+      align-items: center;
+      gap: 1px;
+      opacity: 0;
+      transition: opacity var(--dur-fast) var(--ease-out);
+
+      .act {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border-radius: var(--radius-xs);
+        color: var(--secondary-text-color);
+        cursor: pointer;
+        transition: background-color var(--dur-fast) var(--ease-out),
+        color var(--dur-fast) var(--ease-out),
+        transform var(--spring-duration) var(--spring);
+
+        &:hover {
+          background: var(--base-fill);
+          color: var(--el-text-color-primary);
+        }
+
+        &:active {
+          transform: scale(0.9);
+          background: var(--fill-pressed);
+          transition-duration: 80ms;
+          transition-timing-function: ease-out;
+        }
+
+        &.is-muted {
+          opacity: 0.35;
+          pointer-events: none;
+        }
+      }
+    }
+
+    &:hover {
+      background: var(--email-hover-background);
+
+      .item-actions {
+        opacity: 1;
+      }
+    }
+
+    /* Touch devices have no hover — always show the actions */
+    @media (pointer: coarse) {
+      .item-actions {
+        opacity: 1;
+      }
     }
   }
 
+  /* Clears the floating header so the first row starts below it */
   .item:first-child {
-    margin-top: 10px;
+    margin-top: 50px;
+  }
+
+  .skeleton-item {
+    grid-template-columns: auto minmax(0, 1fr);
+    cursor: default;
+
+    &:hover {
+      background: transparent;
+    }
   }
 
   .item-choose {
-    background: var(--choose-account-background);
+    background: var(--choose-account-background) !important;
+    border-color: var(--choose-account-border);
+
+    .account {
+      font-weight: 650;
+    }
+
+    .item-actions {
+      opacity: 1;
+    }
   }
 }
 

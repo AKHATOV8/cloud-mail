@@ -1,68 +1,75 @@
 <template>
   <el-scrollbar class="scroll">
-    <div>
-      <div class="title" >
-        <Icon icon="mdi:email-outline" width="24" height="24" />
-        <div>{{settingStore.settings.title}}</div>
+    <div class="aside-inner">
+      <div class="brand">
+        <div class="brand-mark">
+          <Icon icon="mdi:email-outline" width="19" height="19"/>
+        </div>
+        <div class="brand-name">{{ settingStore.settings.title }}</div>
       </div>
-      <el-menu :collapse="false" text-color="#fff" active-text-color="#fff" style="margin-top: 10px">
+
+      <el-menu :collapse="false" text-color="var(--aside-text)" active-text-color="var(--aside-active-text)"
+               class="nav">
         <el-menu-item @click="router.push({name: 'email'})" index="email"
                       :class="route.meta.name === 'email' ? 'choose-item' : ''">
-          <Icon icon="hugeicons:mailbox-01" width="20" height="20" />
-          <span class="menu-name" style="margin-left: 21px">{{$t('inbox')}}</span>
+          <Icon class="nav-icon" icon="hugeicons:mailbox-01" width="19" height="19"/>
+          <span class="menu-name">{{ $t('inbox') }}</span>
         </el-menu-item>
         <el-menu-item @click="router.push({name: 'send'})" index="send" v-perm="'email:send'"
                       :class="route.meta.name === 'send' ? 'choose-item' : ''">
-          <Icon icon="cil:send" width="20" height="20" />
-          <span class="menu-name" style="margin-left: 21px">{{$t('sent')}}</span>
+          <Icon class="nav-icon" icon="cil:send" width="18" height="18"/>
+          <span class="menu-name">{{ $t('sent') }}</span>
         </el-menu-item>
         <el-menu-item @click="router.push({name: 'draft'})" index="draft" v-perm="'email:send'"
                       :class="route.meta.name === 'draft' ? 'choose-item' : ''">
-          <Icon icon="ep:document" width="19" height="19" />
-          <span class="menu-name" style="margin-left: 22px">{{$t('drafts')}}</span>
+          <Icon class="nav-icon" icon="ep:document" width="18" height="18"/>
+          <span class="menu-name">{{ $t('drafts') }}</span>
         </el-menu-item>
         <el-menu-item @click="router.push({name: 'star'})" index="star"
                       :class="route.meta.name === 'star' ? 'choose-item' : ''">
-          <Icon icon="solar:star-line-duotone" width="20" height="20" />
-          <span class="menu-name" style="margin-left: 21px">{{$t('starred')}}</span>
+          <Icon class="nav-icon" icon="solar:star-line-duotone" width="19" height="19"/>
+          <span class="menu-name">{{ $t('starred') }}</span>
         </el-menu-item>
         <el-menu-item @click="router.push({name: 'setting'})" index="setting"
                       :class="route.meta.name === 'setting' ? 'choose-item' : ''">
-          <Icon icon="fluent:settings-48-regular" width="20" height="20" />
-          <span class="menu-name" style="margin-left: 21px">{{$t('settings')}}</span>
+          <Icon class="nav-icon" icon="fluent:settings-48-regular" width="19" height="19"/>
+          <span class="menu-name">{{ $t('settings') }}</span>
         </el-menu-item>
-        <div class="manage-title" v-perm="['all-email:query','user:query','role:query','setting:query','analysis:query','reg-key:query']">
-          <div>{{$t('manage')}}</div>
+
+        <div class="manage-title"
+             v-perm="['all-email:query','user:query','role:query','setting:query','analysis:query','reg-key:query']">
+          <span>{{ $t('manage') }}</span>
         </div>
+
         <el-menu-item @click="router.push({name: 'analysis'})" index="analysis" v-perm="'analysis:query'"
                       :class="route.meta.name === 'analysis' ? 'choose-item' : ''">
-          <Icon icon="fluent:data-pie-20-regular" width="24" height="24" />
-          <span class="menu-name" style="margin-left: 18px">{{$t('analytics')}}</span>
+          <Icon class="nav-icon" icon="fluent:data-pie-20-regular" width="20" height="20"/>
+          <span class="menu-name">{{ $t('analytics') }}</span>
         </el-menu-item>
-        <el-menu-item @click="router.push({name: 'user'})" index="setting" v-perm="'user:query'"
+        <el-menu-item @click="router.push({name: 'user'})" index="user" v-perm="'user:query'"
                       :class="route.meta.name === 'user' ? 'choose-item' : ''">
-          <Icon icon="si:user-alt-2-line" width="20" height="20" />
-          <span class="menu-name" style="margin-left: 21px">{{$t('allUsers')}}</span>
+          <Icon class="nav-icon" icon="si:user-alt-2-line" width="18" height="18"/>
+          <span class="menu-name">{{ $t('allUsers') }}</span>
         </el-menu-item>
         <el-menu-item @click="router.push({name: 'all-email'})" index="all-email" v-perm="'all-email:query'"
                       :class="route.meta.name === 'all-email' ? 'choose-item' : ''">
-          <Icon icon="fluent:mail-list-28-regular" width="22" height="22" />
-          <span class="menu-name" style="margin-left: 20px">{{$t('allMail')}}</span>
+          <Icon class="nav-icon" icon="fluent:mail-list-28-regular" width="20" height="20"/>
+          <span class="menu-name">{{ $t('allMail') }}</span>
         </el-menu-item>
-        <el-menu-item @click="router.push({name: 'role'})" index="setting" v-perm="'role:query'"
+        <el-menu-item @click="router.push({name: 'role'})" index="role" v-perm="'role:query'"
                       :class="route.meta.name === 'role' ? 'choose-item' : ''">
-          <Icon icon="fluent:lock-closed-16-regular" width="22" height="22" />
-          <span class="menu-name" style="margin-left: 20px">{{$t('permissions')}}</span>
+          <Icon class="nav-icon" icon="fluent:lock-closed-16-regular" width="20" height="20"/>
+          <span class="menu-name">{{ $t('permissions') }}</span>
         </el-menu-item>
         <el-menu-item @click="router.push({name: 'reg-key'})" index="reg-key" v-perm="'reg-key:query'"
                       :class="route.meta.name === 'reg-key' ? 'choose-item' : ''">
-          <Icon icon="fluent:fingerprint-20-filled" width="22" height="22" />
-          <span class="menu-name" style="margin-left: 20px">{{$t('inviteCode')}}</span>
+          <Icon class="nav-icon" icon="fluent:fingerprint-20-filled" width="20" height="20"/>
+          <span class="menu-name">{{ $t('inviteCode') }}</span>
         </el-menu-item>
         <el-menu-item @click="router.push({name: 'sys-setting'})" index="sys-setting" v-perm="'setting:query'"
                       :class="route.meta.name === 'sys-setting' ? 'choose-item' : ''">
-          <Icon icon="eos-icons:system-ok-outlined" width="18" height="18" style="margin-left: 2px" />
-          <span class="menu-name" style="margin-left: 22px">{{$t('SystemSettings')}}</span>
+          <Icon class="nav-icon" icon="eos-icons:system-ok-outlined" width="17" height="17"/>
+          <span class="menu-name">{{ $t('SystemSettings') }}</span>
         </el-menu-item>
       </el-menu>
     </div>
@@ -82,85 +89,153 @@ const route = useRoute();
 
 <style lang="scss" scoped>
 
-.title {
-  margin: 15px 10px;
-  height: 45px;
-  border-radius: 6px;
+.aside-inner {
+  padding-bottom: 12px;
+}
+
+/* ---------- Brand ---------- */
+.brand {
   display: flex;
-  position: relative;
-  font-size: 16px;
-  font-weight: bold;
   align-items: center;
-  justify-content: center;
-  gap: 5px;
-  color: #ffffff;
-  background: linear-gradient(135deg, #1890ff, #3a80dd);
-  transition: all 0.3s ease;
-  max-width: 240px;
-  padding: 0 10px;
-  > div {
+  gap: 10px;
+  height: 60px;
+  padding: 0 16px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--aside-divider);
+
+  .brand-mark {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    background: linear-gradient(135deg, var(--el-color-primary), #4f46e5);
+    box-shadow: var(--shadow-xs);
+  }
+
+  .brand-name {
+    font-size: 15px;
+    font-weight: 600;
+    /* Large text reads too loose as it grows — tighten it */
+    letter-spacing: var(--tracking-title);
+    color: var(--aside-text-strong);
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    max-width: calc(240px - 20px - 30px);
+    min-width: 0;
   }
-
-  :deep(.el-icon) {
-    flex-shrink: 0;
-    font-size: 20px;
-  }
-
-  .user-right-icon {
-    align-self: center;
-    position: absolute;
-    font-size: 12px;
-    right: 8px;
-    color: #ffffff;
-  }
-
 }
 
-
+/* ---------- Section label ---------- */
 .manage-title {
-  margin-top: 10px;
-  padding-left: 20px;
-  color: #fff;
+  margin: 16px 0 6px;
+  padding: 0 20px;
+  font-size: 11px;
+  font-weight: 600;
+  /* Small text wants a touch of positive tracking to stay legible */
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--aside-section-label);
+  user-select: none;
 }
 
+/* ---------- Nav items ---------- */
 .el-menu-item {
-  margin: 5px 10px !important;
-  border-radius: 6px;
-  height: 36px;
-  padding: 10px !important;
+  margin: 2px 10px !important;
+  border-radius: var(--radius-sm);
+  height: 38px;
+  line-height: 38px;
+  padding: 0 12px !important;
+  font-size: 14px;
+  /* Vibrancy: slightly heavier over a translucent surface */
+  font-weight: 510;
+  letter-spacing: var(--tracking-body);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+  transition: background-color var(--dur-fast) var(--ease-out),
+  color var(--dur-fast) var(--ease-out),
+  transform var(--spring-duration) var(--spring);
 }
 
-.choose-item {
-  font-weight: bold;
-  background: rgba(255, 255, 255, 0.08) !important;
-  backdrop-filter: blur(4px);
-}
-
-@media (hover: hover) {
-  .el-menu-item:hover {
-    background: rgba(255, 255, 255, 0.08) !important;
-  }
+.nav-icon {
+  flex-shrink: 0;
+  width: 20px;
+  opacity: 0.85;
+  transition: opacity var(--dur-fast) var(--ease-out);
 }
 
 .menu-name {
   user-select: none;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
+/* Active state: tinted surface + accent rail on the left */
+.choose-item {
+  font-weight: 600;
+  color: var(--aside-active-text) !important;
+  background: var(--aside-active-bg) !important;
 
-:deep(.el-scrollbar__wrap--hidden-default ) {
-  background: var(--aside-backgound) !important;
+  .nav-icon {
+    opacity: 1;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 18px;
+    border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+    background: var(--el-color-primary);
+  }
+}
+
+@media (hover: hover) {
+  .el-menu-item:hover {
+    background: var(--aside-hover) !important;
+    color: var(--aside-text-strong);
+  }
+
+  .el-menu-item:hover .nav-icon {
+    opacity: 1;
+  }
+
+  .choose-item:hover {
+    background: var(--aside-active-bg) !important;
+    color: var(--aside-active-text) !important;
+  }
+}
+
+/* Highlight the instant it is pressed — waiting for the click feels dead */
+.el-menu-item:active {
+  transform: scale(0.975);
+  background: var(--fill-pressed) !important;
+  transition-duration: 90ms;
+  transition-timing-function: ease-out;
+}
+
+/* ---------- Surfaces ---------- */
+/* Nothing inside re-paints the material — the layer owns the background */
+:deep(.el-scrollbar__wrap--hidden-default) {
+  background: transparent !important;
 }
 
 :deep(.el-menu-item) {
-  background: var(--aside-backgound);
+  background: transparent;
 }
 
 :deep(.el-menu) {
-  background: var(--aside-backgound);
+  background: transparent;
 }
 
 .el-menu {
@@ -170,10 +245,15 @@ const route = useRoute();
 
 :deep(.el-divider__text) {
   background: var(--aside-backgound);
-  color: #FFFFFF;
+  color: var(--aside-text);
 }
 
+/* The sidebar is the heaviest material in the layout — heavier materials
+   separate structural regions, lighter ones carry interactive chrome. */
 .scroll {
-
+  background: var(--aside-backgound);
+  -webkit-backdrop-filter: var(--blur-thick);
+  backdrop-filter: var(--blur-thick);
+  box-shadow: inset -0.5px 0 0 0 var(--aside-divider);
 }
 </style>
