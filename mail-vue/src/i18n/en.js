@@ -1,5 +1,8 @@
 const en = {
     compose: 'Compose',
+    remoteBlocked: 'Blocked {count} remote image(s) to protect your privacy',
+    trackersRemoved: 'Removed {count} tracking pixel(s)',
+    showImages: 'Show images',
     searchPlaceholder: 'Search mail',
     searchNoResult: 'Nothing matches your search',
     clearSearch: 'Clear search',

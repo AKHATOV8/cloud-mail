@@ -1,5 +1,8 @@
 const zh = {
     compose: '写邮件',
+    remoteBlocked: '已拦截 {count} 张外部图片以保护隐私',
+    trackersRemoved: '已移除 {count} 个跟踪像素',
+    showImages: '显示图片',
     searchPlaceholder: '搜索邮件',
     searchNoResult: '没有匹配的邮件',
     clearSearch: '清除搜索',

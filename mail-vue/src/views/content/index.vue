@@ -34,8 +34,24 @@
             <el-alert v-if="email.status === 4" :closable="false" :title="$t('complained')" class="email-msg" type="warning" show-icon />
             <el-alert v-if="email.status === 5" :closable="false" :title="$t('delayed')" class="email-msg" type="warning" show-icon />
           </div>
+          <div class="privacy-bar" v-if="remoteInfo.blocked > 0 && !remoteShown">
+            <Icon class="privacy-icon" icon="ph:shield-check-fill" width="17" height="17"/>
+            <span class="privacy-text">
+              {{ $t('remoteBlocked', {count: remoteInfo.blocked}) }}
+              <span class="tracker-note" v-if="remoteInfo.trackers > 0">
+                {{ $t('trackersRemoved', {count: remoteInfo.trackers}) }}
+              </span>
+            </span>
+            <span class="privacy-action" @click="showRemote">{{ $t('showImages') }}</span>
+          </div>
+          <div class="privacy-bar is-quiet" v-else-if="remoteInfo.trackers > 0 && remoteInfo.blocked === 0 && !remoteShown">
+            <Icon class="privacy-icon" icon="ph:shield-check-fill" width="17" height="17"/>
+            <span class="privacy-text">{{ $t('trackersRemoved', {count: remoteInfo.trackers}) }}</span>
+          </div>
           <el-scrollbar class="htm-scrollbar" :class="email.attList.length === 0 ? 'bottom-distance' : ''">
-            <ShadowHtml class="shadow-html" :html="formatImage(email.content)" v-if="email.content" />
+            <ShadowHtml ref="shadowRef" class="shadow-html" :html="formatImage(email.content)"
+                        :allow-hosts="trustedHosts" v-if="email.content"
+                        @remote-blocked="onRemoteBlocked" />
             <pre v-else class="email-text" >{{email.text}}</pre>
           </el-scrollbar>
           <div class="att" v-if="email.attList.length > 0">
@@ -75,7 +91,7 @@
 </template>
 <script setup>
 import ShadowHtml from '@/components/shadow-html/index.vue'
-import {reactive, ref, watch, onMounted, onUnmounted} from "vue";
+import {computed, reactive, ref, watch, onMounted, onUnmounted} from "vue";
 import {useRouter} from 'vue-router'
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {emailDelete, emailRead} from "@/request/email.js";
@@ -101,6 +117,33 @@ const router = useRouter()
 const email = emailStore.contentData.email
 const showPreview = ref(false)
 const srcList = reactive([])
+
+/* ---------- Remote content blocking ---------- */
+const shadowRef = ref(null)
+const remoteShown = ref(false)
+const remoteInfo = reactive({blocked: 0, trackers: 0})
+
+// Inline attachments are rehosted on our own storage domain — first-party,
+// so they must never be treated as remote content.
+const trustedHosts = computed(() => {
+  const hosts = [window.location.host]
+  const r2Domain = settingStore.settings.r2Domain
+  if (r2Domain) {
+    hosts.push(String(r2Domain).replace(/^https?:\/\//, '').replace(/\/.*$/, ''))
+  }
+  return hosts.filter(Boolean)
+})
+
+function onRemoteBlocked({blocked, trackers}) {
+  remoteInfo.blocked = blocked
+  remoteInfo.trackers = trackers
+  remoteShown.value = false
+}
+
+function showRemote() {
+  shadowRef.value?.revealRemote()
+  remoteShown.value = true
+}
 
 const { t } = useI18n()
 watch(() => accountStore.currentAccountId, () => {
@@ -256,8 +299,76 @@ const handleDelete = () => {
 
   .email-title {
     font-size: 20px;
-    font-weight: bold;
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+    line-height: 1.25;
     margin-bottom: 10px;
+  }
+
+  /* Privacy notice — informative, not alarming. It states what was prevented
+     and offers the way out, without shouting. */
+  .privacy-bar {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 4px 0 14px;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    background: var(--el-color-primary-light-9);
+    border: 1px solid var(--el-color-primary-light-8);
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--el-text-color-primary);
+
+    .privacy-icon {
+      flex-shrink: 0;
+      color: var(--el-color-primary);
+    }
+
+    .privacy-text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .tracker-note {
+      color: var(--secondary-text-color);
+
+      &::before {
+        content: '· ';
+      }
+    }
+
+    .privacy-action {
+      flex-shrink: 0;
+      cursor: pointer;
+      font-weight: 590;
+      color: var(--el-color-primary);
+      padding: 2px 8px;
+      border-radius: var(--radius-xs);
+      transition: background-color var(--dur-fast) var(--ease-out),
+      transform var(--spring-duration) var(--spring);
+
+      &:hover {
+        background: var(--el-color-primary-light-8);
+      }
+
+      &:active {
+        transform: scale(0.94);
+        transition-duration: 80ms;
+        transition-timing-function: ease-out;
+      }
+    }
+
+    /* Nothing for the reader to act on — trackers were simply dropped */
+    &.is-quiet {
+      background: var(--base-fill);
+      border-color: transparent;
+      color: var(--secondary-text-color);
+
+      .privacy-icon {
+        color: var(--secondary-text-color);
+      }
+    }
   }
 
   .htm-scrollbar {
